@@ -152,24 +152,7 @@ export function SettingDialog({ open, onOpenChange }: SettingsDialogProps) {
   }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="sm:max-w-md bg-black border border-white/10 text-white"
-        style={{
-          position: 'fixed',
-          width: 'min(450px, 90vw)',
-          height: 'auto',
-          minHeight: '400px',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          zIndex: 9999,
-          margin: 0,
-          padding: '20px',
-          transition: 'opacity 0.25s ease, transform 0.25s ease',
-          animation: 'fadeIn 0.25s ease forwards',
-          transformOrigin: 'center',
-          backfaceVisibility: 'hidden'
-        }}
-      >
+      <DialogContent className="sm:max-w-md bg-black border border-white/10 text-white w-[min(450px,90vw)] min-h-[400px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>API Settings</DialogTitle>
           <DialogDescription>
