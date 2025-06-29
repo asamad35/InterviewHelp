@@ -6,14 +6,35 @@ import icon from '../../resources/icon.png?asset'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 800,
+    height: 600,
+    minWidth: 750,
+    minHeight: 550,
+    x: 0,
+    y: 50,
     show: false,
+    alwaysOnTop: true,
+    // frame: false,
+    transparent: true,
+    fullscreenable: false,
+    hasShadow: false,
+    opacity: 1,
+    backgroundColor: '#000000',
+    focusable: true,
+    skipTaskbar: true,
+    type: 'panel',
+    paintWhenInitiallyHidden: true,
+    // titleBarStyle: 'hidden',
+    movable: true,
+    enableLargerThanScreen: true,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      scrollBounce: true
     }
   })
 
