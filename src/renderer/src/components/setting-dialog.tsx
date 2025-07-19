@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from './ui/button'
 import {
   Dialog,
@@ -9,10 +9,11 @@ import {
   DialogTitle
 } from './ui/dialog'
 import { Input } from './ui/input'
-type APIProvider = 'openai' | 'gemini'
+import { AIModel as AIModelType, APIProvider, CONSTANTS } from '@/common/utils'
+import { toast } from 'sonner'
 
 type AIModel = {
-  id: string
+  id: AIModelType
   name: string
   description: string
 }
@@ -32,24 +33,24 @@ const modelCategories: ModelCategory[] = [
     description: 'Model used to analyze the screenshots and extract the problem statement',
     openaiModels: [
       {
-        id: 'gpt-4o',
+        id: CONSTANTS.AI_MODELS.GPT_4O,
         name: 'GPT-4o',
         description: 'Best overall performance for problem extraction'
       },
       {
-        id: 'gpt-4o-mini',
+        id: CONSTANTS.AI_MODELS.GPT_4O_MINI,
         name: 'GPT-4o Mini',
         description: 'Faster, more cost-effective model for problem extraction'
       }
     ],
     geminiModels: [
       {
-        id: 'gemini-1.5-pro',
+        id: CONSTANTS.AI_MODELS.GEMINI_1_5_PRO,
         name: 'Gemini 1.5 Pro',
         description: 'Best overall performance for problem extraction'
       },
       {
-        id: 'gemini-2.0-flash',
+        id: CONSTANTS.AI_MODELS.GEMINI_2_0_FLASH,
         name: 'Gemini 2.0 Flash',
         description: 'Faster, more cost-effective model for problem extraction'
       }
@@ -61,24 +62,24 @@ const modelCategories: ModelCategory[] = [
     description: 'Model used to generate the solution to the problem',
     openaiModels: [
       {
-        id: 'gpt-4o',
+        id: CONSTANTS.AI_MODELS.GPT_4O,
         name: 'GPT-4o',
         description: 'Best overall performance for solution generation'
       },
       {
-        id: 'gpt-4o-mini',
+        id: CONSTANTS.AI_MODELS.GPT_4O_MINI,
         name: 'GPT-4o Mini',
         description: 'Faster, more cost-effective model for solution generation'
       }
     ],
     geminiModels: [
       {
-        id: 'gemini-1.5-pro',
+        id: CONSTANTS.AI_MODELS.GEMINI_1_5_PRO,
         name: 'Gemini 1.5 Pro',
         description: 'Best overall performance for solution generation'
       },
       {
-        id: 'gemini-2.0-flash',
+        id: CONSTANTS.AI_MODELS.GEMINI_2_0_FLASH,
         name: 'Gemini 2.0 Flash',
         description: 'Faster, more cost-effective model for solution generation'
       }
@@ -90,24 +91,24 @@ const modelCategories: ModelCategory[] = [
     description: 'Model used to debug the solution',
     openaiModels: [
       {
-        id: 'gpt-4o',
+        id: CONSTANTS.AI_MODELS.GPT_4O,
         name: 'GPT-4o',
         description: 'Best overall performance for debugging'
       },
       {
-        id: 'gpt-4o-mini',
+        id: CONSTANTS.AI_MODELS.GPT_4O_MINI,
         name: 'GPT-4o Mini',
         description: 'Faster, more cost-effective model for debugging'
       }
     ],
     geminiModels: [
       {
-        id: 'gemini-1.5-pro',
+        id: CONSTANTS.AI_MODELS.GEMINI_1_5_PRO,
         name: 'Gemini 1.5 Pro',
         description: 'Best overall performance for debugging'
       },
       {
-        id: 'gemini-2.0-flash',
+        id: CONSTANTS.AI_MODELS.GEMINI_2_0_FLASH,
         name: 'Gemini 2.0 Flash',
         description: 'Faster, more cost-effective model for debugging'
       }
@@ -127,10 +128,10 @@ export function SettingDialog({ open, onOpenChange }: SettingsDialogProps) {
   // const [open, setOpen] = useState(openProp || false)
   // console.log('open', open)
   const [apiKey, setApiKey] = useState('')
-  const [apiProvider, setApiProvider] = useState<APIProvider>('openai')
-  const [extractionModel, setExtractionModel] = useState('gpt-4o')
-  const [solutionModel, setSolutionModel] = useState('gpt-4o')
-  const [debuggingModel, setDebuggingModel] = useState('gpt-4o')
+  const [apiProvider, setApiProvider] = useState<APIProvider>(CONSTANTS.API_PROVIDERS.OPENAI)
+  const [extractionModel, setExtractionModel] = useState<AIModelType>(CONSTANTS.AI_MODELS.GPT_4O)
+  const [solutionModel, setSolutionModel] = useState<AIModelType>(CONSTANTS.AI_MODELS.GPT_4O)
+  const [debuggingModel, setDebuggingModel] = useState<AIModelType>(CONSTANTS.AI_MODELS.GPT_4O)
   const [isLoading, setIsLoading] = useState(false)
 
   const maskApiKey = (key: string) => {
@@ -140,16 +141,51 @@ export function SettingDialog({ open, onOpenChange }: SettingsDialogProps) {
   const handleProviderChange = (provider: APIProvider) => {
     setApiProvider(provider)
 
-    if (provider === 'openai') {
-      setExtractionModel('gpt-4o')
-      setSolutionModel('gpt-4o')
-      setDebuggingModel('gpt-4o')
+    if (provider === CONSTANTS.API_PROVIDERS.OPENAI) {
+      setExtractionModel(CONSTANTS.AI_MODELS.GPT_4O)
+      setSolutionModel(CONSTANTS.AI_MODELS.GPT_4O)
+      setDebuggingModel(CONSTANTS.AI_MODELS.GPT_4O)
     } else {
-      setExtractionModel('gemini-1.5-pro')
-      setSolutionModel('gemini-1.5-pro')
-      setDebuggingModel('gemini-1.5-pro')
+      setExtractionModel(CONSTANTS.AI_MODELS.GEMINI_1_5_PRO)
+      setSolutionModel(CONSTANTS.AI_MODELS.GEMINI_1_5_PRO)
+      setDebuggingModel(CONSTANTS.AI_MODELS.GEMINI_1_5_PRO)
     }
   }
+
+  const handleSave = async () => {
+    setIsLoading(true)
+    try {
+      const result = await window.electronAPI.updateConfig({
+        apiKey,
+        apiProvider,
+        extractionModel,
+        solutionModel,
+        debuggingModel
+      })
+      if (result) {
+        toast.success('Settings saved successfully')
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      toast.error('Failed to save settings')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!open) return
+    setIsLoading(true)
+    try {
+      console.log(window.electronAPI)
+      toast.error('Error fetching config')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [open])
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md bg-black border border-white/10 text-white w-[min(450px,90vw)] min-h-[400px] max-h-[90vh] overflow-y-auto">
@@ -386,7 +422,7 @@ export function SettingDialog({ open, onOpenChange }: SettingsDialogProps) {
             Cancel
           </Button>
           <Button
-            // onClick={handleSave}
+            onClick={handleSave}
             disabled={isLoading || !apiKey}
             className="px-4 py-3 bg-white text-black rounded-xl font-medium hover:bg-white/90 transition-colors"
           >
