@@ -9,7 +9,7 @@ import {
   DialogTitle
 } from './ui/dialog'
 import { Input } from './ui/input'
-import { AIModel as AIModelType, APIProvider, CONSTANTS } from '@/common/utils'
+import { AIModel as AIModelType, APIProvider, Config, CONSTANTS } from '@/common/utils'
 import { toast } from 'sonner'
 
 type AIModel = {
@@ -179,12 +179,22 @@ export function SettingDialog({ open, onOpenChange }: SettingsDialogProps) {
   useEffect(() => {
     if (!open) return
     setIsLoading(true)
-    try {
-      console.log(window.electronAPI)
-      toast.error('Error fetching config')
-    } finally {
-      setIsLoading(false)
-    }
+    window.electronAPI
+      .getConfig()
+      .then((config: Config) => {
+        setApiKey(config.apiKey || '')
+        setApiProvider(config.apiProvider || CONSTANTS.API_PROVIDERS.OPENAI)
+        setExtractionModel(config.extractionModel || CONSTANTS.AI_MODELS.GPT_4O)
+        setSolutionModel(config.solutionModel || CONSTANTS.AI_MODELS.GPT_4O)
+        setDebuggingModel(config.debuggingModel || CONSTANTS.AI_MODELS.GPT_4O)
+      })
+      .catch((error) => {
+        console.error('Failed to fetch config:', error)
+        toast.error('Failed to load config')
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }, [open])
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

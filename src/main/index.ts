@@ -95,11 +95,12 @@ function createWindow(): void {
 
 async function initializeApp() {
   try {
-    initializeIpcHandler()
-    createWindow()
     app.on('browser-window-created', (_, window) => {
       optimizer.watchWindowShortcuts(window)
     })
+
+    initializeIpcHandler()
+    createWindow()
   } catch (error) {
     console.error('Failed to initialize app:', error)
     app.quit()
