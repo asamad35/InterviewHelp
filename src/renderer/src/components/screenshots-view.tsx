@@ -2,6 +2,7 @@ import { TVIEW } from '@/common/utils'
 import { useEffect, useRef, useState } from 'react'
 import ScreenshotQueue from './queue/screenshot-queue'
 import { useQuery } from '@tanstack/react-query'
+import { QueueCommand } from './queue/queue-command'
 
 interface Screenshot {
   path: string
@@ -30,6 +31,13 @@ export const ScreenshotsView = ({
   setLanguage
 }: ScreenshotsViewProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isTooltipVisible, setIsTooltipVisible] = useState(false)
+  const [tooltipHeight, setTooltipHeight] = useState(0)
+
+  const handleTooltipVisibilityChange = (visible: boolean, height: number) => {
+    setIsTooltipVisible(visible)
+    setTooltipHeight(height)
+  }
 
   const {
     data: screenshots = [],
@@ -75,6 +83,12 @@ export const ScreenshotsView = ({
             screenshots={screenshots}
             onDeleteScreenshot={handleDeleteScreenshot}
             isLoading={isLoading}
+          />
+          <QueueCommand
+            currentLanguage={currentLanguage}
+            setLanguage={setLanguage}
+            onTooltipVisibilityChange={handleTooltipVisibilityChange}
+            screenshotCount={screenshots.length}
           />
         </div>
       </div>

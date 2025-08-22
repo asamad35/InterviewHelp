@@ -4,10 +4,21 @@ import { QueryProvider } from './providers/query-provider'
 import { WelcomeScreen } from './components/welcome-screen'
 import { SettingDialog } from './components/setting-dialog'
 import { MainApp } from './components/main-app'
+import { AIModel, APIProvider } from '@/common/utils'
+
+interface AppConfig {
+  apiKey?: string
+  apiProvider?: APIProvider
+  extractionModel?: AIModel
+  solutionModel?: AIModel
+  debuggingModel?: AIModel
+  language?: string
+}
 
 function App(): React.JSX.Element {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [currentLanguage, setCurrentLanguage] = useState('python')
 
   const handleOpenSettings = useCallback(() => {
     setIsSettingsOpen(true)
@@ -19,13 +30,22 @@ function App(): React.JSX.Element {
 
   const markInitialized = useCallback(() => {
     setIsInitialized(true)
+    window.__IS_INITIALIZED__ = true
+  }, [])
+
+  const handleLanguageChange = useCallback((language: string) => {
+    setCurrentLanguage(language)
+    window.__LANGUAGE__ = language
   }, [])
 
   useEffect(() => {
     const intializeApp = async () => {
       try {
-        const config = await window.electronAPI.getConfig()
+        const config = (await window.electronAPI.getConfig()) as AppConfig
         console.log('config', config)
+        if (config?.language) {
+          setCurrentLanguage(config.language)
+        }
         markInitialized()
       } catch (error) {
         console.error('Failed to toggle main window', error)
@@ -34,6 +54,7 @@ function App(): React.JSX.Element {
     intializeApp()
 
     return () => {
+      window.__IS_INITIALIZED__ = false
       setIsInitialized(false)
     }
   }, [markInitialized])
@@ -43,7 +64,7 @@ function App(): React.JSX.Element {
       <Toaster richColors />
       <div className="relative">
         {isInitialized ? (
-          <MainApp currentLanguage={'python'} setLanguage={() => {}} />
+          <MainApp currentLanguage={currentLanguage} setLanguage={handleLanguageChange} />
         ) : (
           <WelcomeScreen onOpenSettings={handleOpenSettings} />
         )}
