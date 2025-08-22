@@ -25,3 +25,5 @@ export interface Config {
   language?: string
   opacity?: number
 }
+
+export type TVIEW = 'queue' | 'solutions' | 'debug'
