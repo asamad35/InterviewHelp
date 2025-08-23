@@ -39,6 +39,13 @@ function App(): React.JSX.Element {
   }, [])
 
   useEffect(() => {
+    const unsubscribe = window.electronAPI.onShowSettings(() => {
+      setIsSettingsOpen(true)
+    })
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
     const intializeApp = async () => {
       try {
         const config = (await window.electronAPI.getConfig()) as AppConfig
@@ -48,7 +55,7 @@ function App(): React.JSX.Element {
         }
         markInitialized()
       } catch (error) {
-        console.error('Failed to toggle main window', error)
+        console.error('Failed to toggle main window in app.tsx', error)
       }
     }
     intializeApp()

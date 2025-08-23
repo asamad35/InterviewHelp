@@ -1,6 +1,7 @@
 import { COMMAND_KEY } from '@renderer/lib/utils'
 import { useEffect, useRef, useState } from 'react'
 import { LanguageSelector } from '../language-selector'
+import { toast } from 'sonner'
 
 interface QueueCommandProps {
   screenshotCount?: number
@@ -49,8 +50,16 @@ export const QueueCommand = ({
         <div className="text-xs backdrop-blur-md bg-black/10 rounded-lg py-2 px-4 flex justify-between items-center gap-4">
           <div
             className="flex items-center gap-2 cursor-pointer rounded px-2 py-1.5 hover:bg-white/10 transition-colors"
-            onClick={() => {
-              // TODO: Implement screenshot command
+            onClick={async () => {
+              try {
+                const result = await window.electronAPI.triggerScreenshot()
+                if (!result.success) {
+                  toast.error('Failed to trigger screenshot')
+                }
+              } catch (error) {
+                console.error('Error triggering screenshot:', error)
+                toast.error('Failed to trigger screenshot')
+              }
             }}
           >
             <span className="text-[11px] leading-none truncate">
@@ -126,7 +135,12 @@ export const QueueCommand = ({
                       <div
                         className="cursor-pointer rounded px-2 py-1.5 hover:bg-white/10 transition-colors"
                         onClick={async () => {
-                          // TODO: Implement toggle window command
+                          try {
+                            await window.electronAPI.toggleMainWindow()
+                          } catch (error) {
+                            console.error('Error toggling main window:', error)
+                            toast.error('Failed to toggle main window in queue')
+                          }
                         }}
                       >
                         <div className="flex items-center justify-between">
@@ -147,7 +161,15 @@ export const QueueCommand = ({
                       <div
                         className="cursor-pointer rounded px-2 py-1.5 hover:bg-white/10 transition-colors"
                         onClick={async () => {
-                          // TODO: Implement take screenshot command
+                          try {
+                            const result = await window.electronAPI.triggerScreenshot()
+                            if (!result.success) {
+                              toast.error('Failed to trigger screenshot')
+                            }
+                          } catch (error) {
+                            console.error('Error triggering screenshot:', error)
+                            toast.error('Failed to trigger screenshot')
+                          }
                         }}
                       >
                         <div className="flex items-center justify-between">
@@ -195,7 +217,15 @@ export const QueueCommand = ({
                           screenshotCount! > 0 ? '' : 'opacity-50 cursor-not-allowed'
                         }`}
                         onClick={async () => {
-                          // TODO: Implement delete last screenshot command
+                          try {
+                            const result = await window.electronAPI.deleteLastScreenshot()
+                            if (!result.success) {
+                              toast.error('Failed to delete last screenshot')
+                            }
+                          } catch (error) {
+                            console.error('Error deleting last screenshot:', error)
+                            toast.error('Failed to delete last screenshot')
+                          }
                         }}
                       >
                         <div className="flex items-center justify-between">
@@ -228,8 +258,16 @@ export const QueueCommand = ({
                           <span>AI API Settings</span>
                           <button
                             className="text-[11px] bg-white/10 hover:bg-white/20 rounded px-2 py-1"
-                            onClick={() => {
-                              // TODO: Implement open settings portal command
+                            onClick={async () => {
+                              try {
+                                const result = await window.electronAPI.openSettingsPortal()
+                                if (!result.success) {
+                                  toast.error('Failed to open settings portal')
+                                }
+                              } catch (error) {
+                                console.error('Error opening settings portal:', error)
+                                toast.error('Failed to open settings portal')
+                              }
                             }}
                           >
                             Settings
