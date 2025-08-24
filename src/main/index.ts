@@ -7,6 +7,7 @@ import { initializeIpcHandler } from './lib/ipc-handler'
 import { KeyboardShortcutsHelper } from './lib/keyboard-shortcuts'
 import { ScreenshotManager } from './lib/screenshot-manager'
 import { TVIEW } from '@/common/utils'
+import { ProcessingManager } from './lib/processing-manager'
 
 export const state = {
   mainWindow: null as BrowserWindow | null,
@@ -21,6 +22,7 @@ export const state = {
 
   keyboardShortcuts: null as KeyboardShortcutsHelper | null,
   screenshotManager: null as ScreenshotManager | null,
+  processingManager: null as ProcessingManager | null,
   view: 'queue' as TVIEW,
   problemInfo: null,
   hasDebugged: false,
@@ -337,8 +339,46 @@ function moveWindowVertical(updateFn: (y: number) => number): void {
   }
 }
 
+function getScreenshotManager(): ScreenshotManager | null {
+  return state.screenshotManager
+}
+
+function getProblemInfo(): unknown {
+  return state.problemInfo
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function setProblemInfo(problemInfo: any): void {
+  state.problemInfo = problemInfo
+}
+
+function setHasDebugged(hasDebugged: boolean): void {
+  state.hasDebugged = hasDebugged
+}
+
+function getHasDebugged(): boolean {
+  return state.hasDebugged
+}
+
 function initializeHelpers() {
   state.screenshotManager = new ScreenshotManager(state.view)
+  state.processingManager = new ProcessingManager({
+    getMainWindow,
+    getScreenshotManager,
+    getView,
+    setView,
+    getProblemInfo,
+    setProblemInfo,
+    getScreenShotQueue,
+    getExtraScreenShotQueue,
+    clearQueues,
+    takeScreenshot,
+    getImagePreview,
+    deleteScreenshot,
+    setHasDebugged,
+    getHasDebugged,
+    PROCESSING_EVENTS: state.PROCESSING_EVENTS
+  })
   state.keyboardShortcuts = new KeyboardShortcutsHelper({
     moveWindowLeft: () =>
       moveWindowHorizontal((x) => Math.max(-(state.windowSize?.width || 0) / 2, x - state.step)),
@@ -354,8 +394,25 @@ function initializeHelpers() {
     takeScreenshot: takeScreenshot,
     getImagePreview: getImagePreview,
     clearQueues: clearQueues,
-    setView: setView
+    setView: setView,
+    processingManager: state.processingManager
   })
+}
+
+function setWindowDimensions(width: number, height: number): void {
+  if (!state.mainWindow?.isDestroyed()) {
+    const [currentX, currentY] = state.mainWindow?.getPosition() || [0, 0]
+    const primaryDisplay = screen.getPrimaryDisplay()
+    const workArea = primaryDisplay.workAreaSize
+    const maxWidth = Math.floor(workArea.width * 0.5)
+
+    state.mainWindow?.setBounds({
+      x: Math.min(currentX, workArea.width - maxWidth),
+      y: currentY,
+      width: Math.min(width + 32, maxWidth),
+      height: Math.ceil(height)
+    })
+  }
 }
 
 async function initializeApp() {
@@ -384,7 +441,10 @@ async function initializeApp() {
       toggleMainWindow: toggleMainWindow,
       isVisible: () => state.isWindowVisible,
       deleteScreenshot: deleteScreenshot,
-      clearExtraScreenshotQueue: clearExtraScreenshotQueue
+      clearExtraScreenshotQueue: clearExtraScreenshotQueue,
+      PROCESSING_EVENTS: state.PROCESSING_EVENTS,
+      processingManager: state.processingManager,
+      setWindowDimensions: setWindowDimensions
     })
     initializeHelpers()
     createWindow()

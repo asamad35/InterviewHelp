@@ -18,6 +18,24 @@ export interface ElectronAPI {
   triggerScreenshot: () => Promise<{ success: boolean; error?: string }>
   onDeleteLastScreenshot: (callback: () => void) => () => void
   onShowSettings: (callback: () => void) => () => void
+  triggerProcessScreenshots: () => Promise<{ success: boolean; error?: string }>
+  onSolutionStart: (callback: () => void) => () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSolutionSuccess: (callback: (data: any) => void) => () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onProblemExtracted: (callback: (data: any) => void) => () => void
+  onResetView: (callback: () => void) => () => void
+  triggerReset: () => Promise<{ success: boolean; error?: string }>
+  onDebugStart: (callback: () => void) => () => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onDebugSuccess: (callback: (data: any) => void) => () => void
+  onDebugError: (callback: (error: string) => void) => () => void
+  onProcessingNoScreenshots: (callback: () => void) => () => void
+  onSolutionError: (callback: (error: string) => void) => () => void
+  updateContentDimensions: (dimensions: { width: number; height: number }) => void
+  openLink: (url: string) => Promise<{ success: boolean; error?: string }>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  removeListener: (eventName: string, callback: (...args: any[]) => void) => void
 }
 
 declare global {

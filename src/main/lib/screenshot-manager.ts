@@ -80,7 +80,7 @@ export class ScreenshotManager {
       if (this.view === 'queue') {
         screenshotPath = path.join(this.screenshotDir, `screenshot-${uuidv4()}.png`)
         await fs.promises.writeFile(screenshotPath, screenshotBuffer)
-        console.log('Screenshot saved to', screenshotPath)
+        console.log('Screenshot saved to', screenshotPath.slice(0, 30))
         this.screenshotQueue.push(screenshotPath)
         if (this.screenshotQueue.length >= this.MAX_SCREENSHOTS) {
           const removedPath = this.screenshotQueue.shift()
@@ -96,7 +96,7 @@ export class ScreenshotManager {
       } else {
         screenshotPath = path.join(this.extraScreenshotDir, `screenshot-${uuidv4()}.png`)
         await fs.promises.writeFile(screenshotPath, screenshotBuffer)
-        console.log('Screenshot saved to', screenshotPath)
+        console.log('Screenshot saved to', screenshotPath.slice(0, 30))
         this.extraScreenshotQueue.push(screenshotPath)
         if (this.extraScreenshotQueue.length >= this.MAX_SCREENSHOTS) {
           const removedPath = this.extraScreenshotQueue.shift()
@@ -194,8 +194,9 @@ export class ScreenshotManager {
       console.log('Starting Windows screenshot capture...')
 
       const tempFilePath = path.join(this.tempDir, `temp-${uuidv4()}.png`)
+
       await screenshot({
-        path: tempFilePath
+        filename: tempFilePath
       })
 
       if (fs.existsSync(tempFilePath)) {

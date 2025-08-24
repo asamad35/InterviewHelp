@@ -1,6 +1,8 @@
-import { BrowserWindow, ipcMain } from 'electron'
-import { configManager } from './config-manager'
 import { TVIEW } from '@/common/utils'
+import { BrowserWindow, ipcMain, shell } from 'electron'
+import { state } from '..'
+import { configManager } from './config-manager'
+import { ProcessingManager } from './processing-manager'
 
 export interface IpcHandler {
   getMainWindow: () => BrowserWindow | null
@@ -19,6 +21,9 @@ export interface IpcHandler {
   isVisible: () => boolean
   deleteScreenshot: (screenshotPath: string) => Promise<{ success: boolean; error?: string }>
   clearExtraScreenshotQueue: () => void
+  PROCESSING_EVENTS: typeof state.PROCESSING_EVENTS
+  processingManager: ProcessingManager | null
+  setWindowDimensions: (width: number, height: number) => void
 }
 export function initializeIpcHandler(deps: IpcHandler): void {
   ipcMain.handle('get-config', () => {
@@ -134,5 +139,60 @@ export function initializeIpcHandler(deps: IpcHandler): void {
       return { success: true }
     }
     return { success: false, error: 'Main window not found' }
+  })
+  ipcMain.handle('trigger-process-screenshots', async () => {
+    try {
+      if (!configManager.hasApiKey()) {
+        const mainWindow = deps.getMainWindow()
+        if (mainWindow) {
+          mainWindow.webContents.send(deps.PROCESSING_EVENTS.API_KEY_INVALID)
+        }
+        return { success: false, error: 'No API key found' }
+      }
+      await deps.processingManager?.processScreenshots()
+      return { success: true }
+    } catch (error) {
+      console.error('Error triggering process screenshots:', error)
+      return { success: false, error: 'Failed to process screenshots' }
+    }
+  })
+  ipcMain.handle('trigger-reset', async () => {
+    try {
+      deps.processingManager?.cancelOngoingRequest()
+
+      deps.clearQueues()
+      deps.setView('queue')
+
+      const mainWindow = deps.getMainWindow()
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('reset-view')
+      }
+      return { success: true }
+    } catch (error) {
+      console.error('Error triggering reset:', error)
+      return { success: false, error: 'Failed to reset' }
+    }
+  })
+  ipcMain.handle('set-window-dimensions', (_, width: number, height: number) => {
+    return deps.setWindowDimensions(width, height)
+  })
+  ipcMain.handle(
+    'update-content-dimensions',
+    async (_, { width, height }: { width: number; height: number }) => {
+      console.log('update-content-dimensions', width, height)
+      if (width && height) {
+        deps.setWindowDimensions(width, height)
+      }
+    }
+  )
+  ipcMain.handle('openLink', (_, url: string) => {
+    try {
+      console.log('openLink', url)
+      shell.openExternal(url)
+      return { success: true }
+    } catch (error) {
+      console.error('Error opening link:', error)
+      return { success: false, error: 'Failed to open link' }
+    }
   })
 }

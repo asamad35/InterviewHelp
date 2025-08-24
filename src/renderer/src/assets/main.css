@@ -2,6 +2,6 @@
 
 @plugin "tailwindcss-animate";
 
-*div {
+* div {
   color: white;
 }

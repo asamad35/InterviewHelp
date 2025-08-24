@@ -16,8 +16,8 @@ export interface IProcessingManager {
   getProblemInfo: () => any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setProblemInfo: (problemInfo: any) => void
-  getScreenshotQueue: () => string[]
-  getExtraScreenshotQueue: () => string[]
+  getScreenShotQueue: () => string[]
+  getExtraScreenShotQueue: () => string[]
   clearQueues: () => void
   takeScreenshot: () => Promise<string>
   getImagePreview: (path: string) => Promise<string>
@@ -306,6 +306,7 @@ export class ProcessingManager {
 
   private async processScreenshotHelper(screenshots: Array<{ path: string; data: string }>) {
     try {
+      console.log('in processScreenshotHelper', screenshots.length)
       const config = configManager.loadConfig()
       const language = await this.getLanguage()
       const mainWindow = this.deps.getMainWindow()
@@ -462,10 +463,10 @@ export class ProcessingManager {
             message: 'Solution generated successfully. Displaying results...'
           })
 
-          mainWindow.webContents.send(
-            this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS,
-            solutionsResponse.data
-          )
+          // mainWindow.webContents.send(
+          //   this.deps.PROCESSING_EVENTS.SOLUTION_SUCCESS,
+          //   solutionsResponse.data
+          // )
 
           return {
             success: true,
