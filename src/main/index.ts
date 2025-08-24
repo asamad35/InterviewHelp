@@ -8,7 +8,7 @@ import { KeyboardShortcutsHelper } from './lib/keyboard-shortcuts'
 import { ScreenshotManager } from './lib/screenshot-manager'
 import { TVIEW } from '@/common/utils'
 
-const state = {
+export const state = {
   mainWindow: null as BrowserWindow | null,
   isWindowVisible: false,
   windowPosition: null as { x: number; y: number } | null,
@@ -22,7 +22,20 @@ const state = {
   keyboardShortcuts: null as KeyboardShortcutsHelper | null,
   screenshotManager: null as ScreenshotManager | null,
   view: 'queue' as TVIEW,
-  problemInfo: null
+  problemInfo: null,
+  hasDebugged: false,
+
+  PROCESSING_EVENTS: {
+    NO_SCREENSHOTS: 'processing-no-screenshots',
+    API_KEY_INVALID: 'api-key-invalid',
+    INITIAL_START: 'initial-start',
+    PROBLEM_EXTRACTED: 'problem-extracted',
+    SOLUTION_SUCCESS: 'solution-success',
+    INITIAL_SOLUTION_ERROR: 'solution-error',
+    DEBUG_START: 'debug-start',
+    DEBUG_SUCCESS: 'debug-success',
+    DEBUG_ERROR: 'debug-error'
+  }
 }
 
 // Configure app paths and cache BEFORE app.whenReady()
